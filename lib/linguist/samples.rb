@@ -1,3 +1,5 @@
+require 'find'
+
 begin
   require 'yajl'
 rescue LoadError
@@ -42,13 +44,15 @@ module Linguist
           next if filename == '.' || filename == '..'
 
           if filename == 'filenames'
-            Find.find(File.join(dirname, filename)).each do |descendant_path|
+            filenames_dir = File.join(dirname, filename)
+            Find.find(filenames_dir).each do |raw_descendant_path|
+              descendant_path = Pathname.new(raw_descendant_path)
               next if descendant_path.directory?
 
               yield({
-                :path    => descendant_path,
+                :path    => descendant_path.to_s,
                 :language => category,
-                :filename => subfilename
+                :filename => descendant_path.relative_path_from(filenames_dir).to_s
               })
             end
           else

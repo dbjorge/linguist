@@ -85,7 +85,7 @@ module Linguist
 
       language.filenames.each do |filename|
         @filename_index[filename] << language
-        @max_filename_components = max(@max_filename_components, 1 + filename.count "/")
+        @max_filename_components = [@max_filename_components, 1 + filename.count("/")].max
       end
 
       @language_id_index[language.language_id] = language
@@ -130,15 +130,14 @@ module Linguist
       name && (@alias_index[name.downcase] || @alias_index[name.split(',', 2).first.downcase])
     end
 
-    # Public: Look up Languages by filename.
-    #
-    # The behaviour of this method recently changed.
-    # See the second example below.
+    # Public: Look up Language by filename.
     #
     # filename - The path String.
     #
     # Examples
     #
+    #   Language.find_by_filename('irrelevant/.vscode/settings.json')
+    #   # => [#<Language name="JSON With Comments">]
     #   Language.find_by_filename('Cakefile')
     #   # => [#<Language name="CoffeeScript">]
     #   Language.find_by_filename('foo.rb')
@@ -146,17 +145,18 @@ module Linguist
     #
     # Returns all matching Languages or [] if none were found.
     def self.find_by_filename(filename)
-      path_components = Pathname.new(filename).each_filename(|component| component)
       most_specific_result = nil
-      running_suffix = ''
-      path_components.reverse.each_with_index do |component, index|
+      running_suffix = nil
+
+      reverse_path_components = Pathname.new(filename).each_filename.to_a.reverse
+      reverse_path_components.each_with_index {|component, index|
         break if index >= @max_filename_components
-        running_suffix = Pathname.join(component, running_suffix)
+        running_suffix = running_suffix ? File.join(component, running_suffix) : component
         candidate_result = @filename_index[running_suffix]
         most_specific_result = candidate_result if candidate_result
-      end
+      }
 
-      return most_specific_result ? [most_specific_result] || []
+      most_specific_result
     end
 
     # Public: Look up Languages by file extension.
