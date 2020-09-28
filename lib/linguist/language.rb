@@ -30,6 +30,7 @@ module Linguist
     @extension_index    = Hash.new { |h,k| h[k] = [] }
     @interpreter_index  = Hash.new { |h,k| h[k] = [] }
     @filename_index     = Hash.new { |h,k| h[k] = [] }
+    @max_filename_components = 1
 
     # Valid Languages types
     TYPES = [:data, :markup, :programming, :prose]
@@ -84,6 +85,7 @@ module Linguist
 
       language.filenames.each do |filename|
         @filename_index[filename] << language
+        @max_filename_components = max(@max_filename_components, 1 + filename.count "/")
       end
 
       @language_id_index[language.language_id] = language
@@ -144,8 +146,17 @@ module Linguist
     #
     # Returns all matching Languages or [] if none were found.
     def self.find_by_filename(filename)
-      basename = File.basename(filename)
-      @filename_index[basename]
+      path_components = Pathname.new(filename).each_filename(|component| component)
+      most_specific_result = nil
+      running_suffix = ''
+      path_components.reverse.each_with_index do |component, index|
+        break if index >= @max_filename_components
+        running_suffix = Pathname.join(component, running_suffix)
+        candidate_result = @filename_index[running_suffix]
+        most_specific_result = candidate_result if candidate_result
+      end
+
+      return most_specific_result ? [most_specific_result] || []
     end
 
     # Public: Look up Languages by file extension.
@@ -418,7 +429,7 @@ module Linguist
     #
     #   # => ['Rakefile', ...]
     #
-    # Returns the extensions Array
+    # Returns the filenames Array
     attr_reader :filenames
 
     # Public: Get URL escaped name.

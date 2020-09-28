@@ -62,7 +62,7 @@ module Linguist
     #
     # Return true or false
     def likely_binary?
-      binary_mime_type? && !Language.find_by_filename(name)
+      binary_mime_type? && !Language.find_by_filename(path)
     end
 
     # Public: Get the Content-Type header value

@@ -2489,12 +2489,12 @@ JSON with Comments:
   - ".jscsrc"
   - ".jshintrc"
   - ".jslintrc"
-  - extensions.json
+  - ".vscode/extensions.json"
+  - ".vscode/launch.json"
+  - ".vscode/settings.json"
+  - ".vscode/tasks.json"
   - jsconfig.json
   - language-configuration.json
-  - launch.json
-  - settings.json
-  - tasks.json
   - tsconfig.json
   - tslint.json
   language_id: 423

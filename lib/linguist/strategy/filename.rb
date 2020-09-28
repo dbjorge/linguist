@@ -15,8 +15,8 @@ module Linguist
       # Selected languages must be in the candidate list, except if it's empty,
       # in which case any language is a valid candidate.
       def self.call(blob, candidates)
-        name = blob.name.to_s
-        languages = Language.find_by_filename(name)
+        path = blob.path.to_s
+        languages = Language.find_by_filename(path)
         candidates.any? ? candidates & languages : languages
       end
     end

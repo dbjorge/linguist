@@ -42,11 +42,11 @@ module Linguist
           next if filename == '.' || filename == '..'
 
           if filename == 'filenames'
-            Dir.entries(File.join(dirname, filename)).each do |subfilename|
-              next if subfilename == '.' || subfilename == '..'
+            Find.find(File.join(dirname, filename)).each do |descendant_path|
+              next if descendant_path.directory?
 
               yield({
-                :path    => File.join(dirname, filename, subfilename),
+                :path    => descendant_path,
                 :language => category,
                 :filename => subfilename
               })
